@@ -1,0 +1,16 @@
+{
+  "name": "linkedin-auto-poster",
+  "version": "1.0.0",
+  "description": "Auto post LinkedIn content with OpenAI and Telegram review",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "listen": "node telegramListener.js"
+  },
+  "dependencies": {
+    "axios": "^1.4.0",
+    "dotenv": "^16.0.3",
+    "node-cron": "^3.0.2",
+    "playwright": "^1.43.0"
+  }
+}
