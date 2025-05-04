@@ -102,7 +102,7 @@ module.exports = async function postToLinkedIn({ content, imagePath }) {
     
     // Wait for post to complete
     console.log('Waiting for post to complete...');
-    await page.waitForTimeout(5000);
+    await page.waitForTimeout(10000); // Wait 10 seconds
     
     console.log('Post completed successfully!');
     return true;

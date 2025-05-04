@@ -1,13 +1,19 @@
 require('dotenv').config();
 const axios = require('axios');
-const fs = require('fs');
-const path = require('path');
+const { MongoClient } = require('mongodb');
 const postToLinkedIn = require('./postToLinkedIn');
 
 const TELEGRAM_API = `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}`;
 const CHAT_ID = process.env.TELEGRAM_USER_ID;
-const tempPostFile = path.join(__dirname, 'pendingPost.txt');
-const tempImageFile = path.join(__dirname, 'pendingImage.png');
+const MONGO_URI = process.env.MONGO_URI;
+const DB_NAME = 'linkedin-auto-poster';
+const COLLECTION = 'pendingPosts';
+
+async function getDb() {
+  const client = new MongoClient(MONGO_URI);
+  await client.connect();
+  return client.db(DB_NAME);
+}
 
 let lastUpdateId = null;
 
@@ -26,20 +32,26 @@ async function checkForCommands() {
 
       if (senderId.toString() !== CHAT_ID) continue;
 
+      const db = await getDb();
+      const pending = await db.collection(COLLECTION).findOne();
+
+      if (!pending) {
+        await axios.post(`${TELEGRAM_API}/sendMessage`, {
+          chat_id: CHAT_ID,
+          text: "No post is pending for approval."
+        });
+        continue;
+      }
+
       if (messageText === "/approve") {
-        const content = fs.readFileSync(tempPostFile, 'utf8');
-        let imagePath = null;
-        if (fs.existsSync(tempImageFile)) imagePath = tempImageFile;
-        await postToLinkedIn({ content, imagePath });
+        await postToLinkedIn({ content: pending.content, imagePath: null });
         await axios.post(`${TELEGRAM_API}/sendMessage`, {
           chat_id: CHAT_ID,
           text: "✅ Post approved and published to LinkedIn!"
         });
-        fs.unlinkSync(tempPostFile);
-        if (imagePath) fs.unlinkSync(tempImageFile);
+        await db.collection(COLLECTION).deleteOne({ _id: pending._id });
       } else if (messageText === "/skip") {
-        fs.unlinkSync(tempPostFile);
-        if (fs.existsSync(tempImageFile)) fs.unlinkSync(tempImageFile);
+        await db.collection(COLLECTION).deleteOne({ _id: pending._id });
         await axios.post(`${TELEGRAM_API}/sendMessage`, {
           chat_id: CHAT_ID,
           text: "🚫 Post skipped and deleted."
