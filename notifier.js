@@ -13,8 +13,7 @@ async function sendTelegramMessage(message) {
   try {
     const response = await axios.post(url, {
       chat_id: chatId,
-      text: message,
-      parse_mode: 'Markdown'
+      text: message
     });
     console.log("Telegram notification sent successfully:", response.data);
     return true;
