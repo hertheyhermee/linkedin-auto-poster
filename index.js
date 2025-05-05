@@ -36,6 +36,3 @@ cron.schedule('0 6 * * *', schedulePost);
 cron.schedule('30 12 * * *', schedulePost);
 // 7:00 PM
 cron.schedule('0 19 * * *', schedulePost);
-
-// Temporary: Run every minute for testing (remove after testing)
-cron.schedule('* * * * *', schedulePost);
