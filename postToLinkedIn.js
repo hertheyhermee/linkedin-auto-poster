@@ -5,7 +5,7 @@ const path = require('path');
 module.exports = async function postToLinkedIn({ content, imagePath }) {
   console.log('Starting LinkedIn post process...');
   const browser = await chromium.launch({ 
-    headless: false, // Set to true for production
+    headless: true, // Set to true for production
     slowMo: 50 // Slow down operations to appear more human-like
   });
   
